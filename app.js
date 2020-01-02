@@ -1,4 +1,5 @@
 //jshint esversion:6
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const ejs = require('ejs');
@@ -12,13 +13,10 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 
 mongoose
-  .connect(
-    'mongodb+srv://elba:elba@cluster0-6floo.mongodb.net/secrets?retryWrites=true&w=majority',
-    {
-      useUnifiedTopology: true,
-      useNewUrlParser: true,
-    }
-  )
+  .connect(`${process.env.MONGODB_SRV}`, {
+    useUnifiedTopology: true,
+    useNewUrlParser: true,
+  })
   .then(() => console.log('DB Connected!'))
   .catch((err) => {
     console.log(`DB Connection Error: ${err.message}`);
@@ -29,8 +27,10 @@ const userSchema = new mongoose.Schema({
   password: String,
 });
 
-const secret = 'Thisisourlittlesecret.';
-userSchema.plugin(encrypt, { secret: secret, encryptedFields: ["password"] });
+userSchema.plugin(encrypt, {
+  secret: process.env.SECRET,
+  encryptedFields: ['password'],
+});
 
 const User = new mongoose.model('User', userSchema);
 
