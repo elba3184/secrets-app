@@ -51,12 +51,12 @@ const User = new mongoose.model('User', userSchema);
 
 passport.use(User.createStrategy());
 
-passport.serializeUser(function(user, done) {
+passport.serializeUser((user, done) => {
   done(null, user.id);
 });
 
-passport.deserializeUser(function(id, done) {
-  User.findById(id, function(err, user) {
+passport.deserializeUser((id, done) => {
+  User.findById(id, (err, user) => {
     done(err, user);
   });
 });
@@ -69,15 +69,15 @@ passport.use(
       callbackURL: 'http://localhost:3000/auth/google/secrets',
       userProfileURL: 'https://www.googleapis.com/oauth2/v3/userinfo',
     },
-    function(accessToken, refreshToken, profile, cb) {
-      User.findOrCreate({ googleId: profile.id }, function(err, user) {
+    (accessToken, refreshToken, profile, cb) => {
+      User.findOrCreate({ googleId: profile.id }, (err, user) => {
         return cb(err, user);
       });
     }
   )
 );
 
-app.get('/', function(req, res) {
+app.get('/', (req, res) => {
   res.render('home');
 });
 
@@ -89,21 +89,21 @@ app.get(
 app.get(
   '/auth/google/secrets',
   passport.authenticate('google', { failureRedirect: '/login' }),
-  function(req, res) {
+  (req, res) => {
     res.redirect('/secrets');
   }
 );
 
-app.get('/login', function(req, res) {
+app.get('/login', (req, res) => {
   res.render('login');
 });
 
-app.get('/register', function(req, res) {
+app.get('/register', (req, res) => {
   res.render('register');
 });
 
-app.get('/secrets', function(req, res) {
-  User.find({ secret: { $ne: null } }, function(err, foundUsers) {
+app.get('/secrets', (req, res) => {
+  User.find({ secret: { $ne: null } }, (err, foundUsers) => {
     if (err) {
       console.log(err);
     } else {
@@ -114,7 +114,7 @@ app.get('/secrets', function(req, res) {
   });
 });
 
-app.get('/submit', function(req, res) {
+app.get('/submit', (req, res) => {
   if (req.isAuthenticated()) {
     res.render('submit');
   } else {
@@ -122,16 +122,16 @@ app.get('/submit', function(req, res) {
   }
 });
 
-app.post('/submit', function(req, res) {
+app.post('/submit', (req, res) => {
   const submittedSecret = req.body.secret;
 
-  User.findById(req.user.id, function(err, foundUser) {
+  User.findById(req.user.id, (err, foundUser) => {
     if (err) {
       console.log(err);
     } else {
       if (foundUser) {
         foundUser.secret = submittedSecret;
-        foundUser.save(function() {
+        foundUser.save(() => {
           res.redirect('/secrets');
         });
       }
@@ -139,44 +139,45 @@ app.post('/submit', function(req, res) {
   });
 });
 
-app.get('/logout', function(req, res) {
+app.get('/logout', (req, res) => {
   req.logout();
   res.redirect('/');
 });
 
-app.post('/register', function(req, res) {
-  User.register({ username: req.body.username }, req.body.password, function(
-    err,
-    user
-  ) {
-    if (err) {
-      console.log(err);
-      res.redirect('/register');
-    } else {
-      passport.authenticate('local')(req, res, function() {
-        res.redirect('/secrets');
-      });
+app.post('/register', (req, res) => {
+  User.register(
+    { username: req.body.username },
+    req.body.password,
+    (err, user) => {
+      if (err) {
+        console.log(err);
+        res.redirect('/register');
+      } else {
+        passport.authenticate('local')(req, res, () => {
+          res.redirect('/secrets');
+        });
+      }
     }
-  });
+  );
 });
 
-app.post('/login', function(req, res) {
+app.post('/login', (req, res) => {
   const user = new User({
     username: req.body.username,
     password: req.body.password,
   });
 
-  req.login(user, function(err) {
+  req.login(user, (err) => {
     if (err) {
       console.log(err);
     } else {
-      passport.authenticate('local')(req, res, function() {
+      passport.authenticate('local')(req, res, () => {
         res.redirect('/secrets');
       });
     }
   });
 });
 
-app.listen(3000, function() {
+app.listen(3000, () => {
   console.log('Server started on port 3000! :)');
 });
