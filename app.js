@@ -103,7 +103,7 @@ app.get('/register', (req, res) => {
 });
 
 app.get('/secrets', (req, res) => {
-  User.find({ secret: { $ne: null } }, (err, foundUsers) => {
+  User.find({ "secret": { $ne: null } }, (err, foundUsers) => {
     if (err) {
       console.log(err);
     } else {
